@@ -57,7 +57,7 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
 
-    if not any(files) and files != []:
+    if files is not None and not any(files):
         raise BuildapiError("The variable files was empty, please try again.")
 
     try:
