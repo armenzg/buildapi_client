@@ -67,6 +67,38 @@ class TestTriggerJob(unittest.TestCase):
             buildapi_client.trigger_arbitrary_job(
                 "repo", "builder", "123456123456", auth=None, dry_run=False)
 
+    @patch('requests.post', return_value=mock_response(POST_RESPONSE, 200))
+    def test_with_empty_file1(self, post):
+        """trigger_arbitrary_job should raise an BuildapiError
+           if it receives files set to [None, None]."""
+        with self.assertRaises(buildapi_client.buildapi_client.BuildapiError):
+            buildapi_client.trigger_arbitrary_job(
+                repo_name="repo", builder="builder", revision="123456123456", auth=None,
+                files=[None, None], dry_run=False, extra_properties=None)
+
+    @patch('requests.post', return_value=mock_response(POST_RESPONSE, 200))
+    def test_with_empty_file2(self, post):
+        """trigger_arbitrary_job should raise an BuildapiError
+           if it receives files set to [None]."""
+        with self.assertRaises(buildapi_client.buildapi_client.BuildapiError):
+            buildapi_client.trigger_arbitrary_job(
+                repo_name="repo", builder="builder", revision="123456123456", auth=None,
+                files=[None], dry_run=False, extra_properties=None)
+
+    @patch('requests.post', return_value=mock_response(POST_RESPONSE, 200))
+    def test_call_with_empty_file3(self, post):
+        """trigger_arbitrary_job should call requests.post with files=[]."""
+        buildapi_client.trigger_arbitrary_job(
+            "repo", "builder", "123456123456", auth=None, files=[], dry_run=False)
+        # We expect that trigger_arbitrary_job will call requests.post
+        # once with the following arguments
+        post.assert_called_once_with(
+            '%s/%s/builders/%s/%s' % (SELF_SERVE, "repo", "builder", "123456123456"),
+            headers={'Accept': 'application/json'},
+            data={'properties':
+                  '{"branch": "repo", "revision": "123456123456"}'},
+            auth=None)
+
 
 class TestMakeRetriggerRequest(unittest.TestCase):
 
