@@ -1,13 +1,16 @@
 from setuptools import setup, find_packages
 
+required = [
+    'requests>=2.5.1'
+]
+
 setup(
     name='buildapi_client',
     version='0.3.1.dev0',
     packages=find_packages(),
 
-    install_requires=[
-        'requests>=2.5.1'
-    ],
+    install_requires=required + ['pytest-runner'],
+    tests_require=required + ['mock', 'pytest'],
 
     # Meta-data for upload to PyPI
     author='Armen Zambrano G.',
