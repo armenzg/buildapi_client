@@ -251,17 +251,17 @@ def query_pending_jobs(auth, repo_name=None, return_raw=False):
         return raw
 
     # If we only want pending jobs of a specific repo
-    if repo_name and repo_name in raw['pending'].keys():
+    if repo_name and repo_name in list(raw['pending'].keys()):
         repo_list = [repo_name]
     else:
-        repo_list = raw['pending'].keys()
+        repo_list = list(raw['pending'].keys())
 
     # Data structure to return
     data = {}
     for repo in repo_list:
         data[repo] = {}
         repo_jobs = raw['pending'][repo]
-        for revision in repo_jobs.iteritems():
+        for revision in repo_jobs.items():
             data[repo][revision[0]] = revision[1]
 
     return data
