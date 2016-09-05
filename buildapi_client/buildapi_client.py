@@ -43,8 +43,9 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
     payload = _payload(repo_name, revision, files, extra_properties)
 
     if dry_run:
-        LOG.info("Dry-run: We were going to request a job for '%s'" % builder)
-        LOG.info("         with this payload: %s" % str(payload))
+        LOG.info("Dry-run: We were going to request a job for '{}'".format(builder))
+        LOG.info("         with this payload: {}".format(str(payload)))
+        LOG.info("         with these files: {}".format(files))
         return None
 
     # NOTE: A good response returns json with request_id as one of the keys
@@ -57,7 +58,8 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
 
-    if files is not None and not any(files):
+    # We accept not setting files for build jobs, however, we don't accept lists of None
+    if files != [] and not any(files):
         raise BuildapiError("The variable files was empty, please try again.")
 
     try:
