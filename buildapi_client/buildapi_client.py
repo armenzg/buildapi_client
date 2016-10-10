@@ -30,7 +30,7 @@ class BuildapiError(Exception):
     pass
 
 
-def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=False,
+def trigger_arbitrary_job(repo_name, builder, revision, auth, files=None, dry_run=False,
                           extra_properties=None):
     """
     Request buildapi to trigger a job for us.
@@ -187,7 +187,7 @@ def _jobs_api_url(job_id):
     return r'''%s/jobs/%s''' % (SELF_SERVE, job_id)
 
 
-def _payload(repo_name, revision, files=[], extra_properties=None):
+def _payload(repo_name, revision, files=None, extra_properties=None):
 
     # These properties are needed for Treeherder to display running jobs.
     # Additional properties may be specified by a user.
