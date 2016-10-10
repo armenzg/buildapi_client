@@ -6,7 +6,7 @@ required = [
 
 setup(
     name='buildapi_client',
-    version='0.3.1.dev0',
+    version='0.3.1',
     packages=find_packages(),
 
     install_requires=required + ['pytest-runner'],
