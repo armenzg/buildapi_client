@@ -63,7 +63,7 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
         raise BuildapiError("The variable files was empty, please try again.")
 
     try:
-        content = req.json()
+        req.json()
         return req
 
     except ValueError:
