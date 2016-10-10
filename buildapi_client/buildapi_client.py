@@ -62,7 +62,6 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
 
     try:
         content = req.json()
-        LOG.debug("Status of the request: %s" % _jobs_api_url(content["request_id"]))
         return req
 
     except ValueError:
