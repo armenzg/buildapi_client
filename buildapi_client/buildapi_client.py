@@ -26,11 +26,7 @@ class BuildapiAuthError(Exception):
     pass
 
 
-class BuildapiError(Exception):
-    pass
-
-
-def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=False,
+def trigger_arbitrary_job(repo_name, builder, revision, auth, files=None, dry_run=False,
                           extra_properties=None):
     """
     Request buildapi to trigger a job for us.
@@ -57,10 +53,6 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=[], dry_run=
     )
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
-
-    # We accept not setting files for build jobs, however, we don't accept lists of None
-    if files != [] and not any(files):
-        raise BuildapiError("The variable files was empty, please try again.")
 
     try:
         req.json()
