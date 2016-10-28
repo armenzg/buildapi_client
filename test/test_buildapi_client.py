@@ -13,6 +13,8 @@ POST_RESPONSE = """{
     "request_id": 1234567
     }
 """
+FORTY_CHAR_CHANGESET = '67ff6167e020cca50fa2a64c16c1e1074b8a2871'
+TWELVE_CHAR_CHANGESET = FORTY_CHAR_CHANGESET[0:12]
 
 
 def mock_response(content, status):
@@ -41,14 +43,14 @@ class TestTriggerJob(unittest.TestCase):
     def test_call_without_dry_run(self, post):
         """trigger_arbitrary_job should call requests.post."""
         buildapi_client.trigger_arbitrary_job(
-            "repo", "builder", "123456123456", auth=None, dry_run=False)
+            "repo", "builder", FORTY_CHAR_CHANGESET, auth=None, dry_run=False)
         # We expect that trigger_arbitrary_job will call requests.post
         # once with the following arguments
         post.assert_called_once_with(
-            '%s/%s/builders/%s/%s' % (SELF_SERVE, "repo", "builder", "123456123456"),
+            '%s/%s/builders/%s/%s' % (SELF_SERVE, "repo", "builder", FORTY_CHAR_CHANGESET),
             headers={'Accept': 'application/json'},
             data={'properties':
-                  '{"branch": "repo", "revision": "123456123456"}'},
+                  '{"branch": "repo", "revision": "%s"}' % FORTY_CHAR_CHANGESET},
             auth=None)
 
     @patch('requests.post', return_value=mock_response(POST_RESPONSE, 200))
@@ -56,7 +58,11 @@ class TestTriggerJob(unittest.TestCase):
         """trigger_arbitrary_job should return None when dry_run is True."""
         self.assertEquals(
             buildapi_client.trigger_arbitrary_job(
-                "repo", "builder", "123456123456", auth=None, dry_run=True), None)
+                repo_name="repo",
+                builder="builder",
+                revision=FORTY_CHAR_CHANGESET,
+                auth=None,
+                dry_run=True), None)
         # trigger_arbitrary_job should not call requests.post when dry_run is True
         assert post.call_count == 0
 
@@ -65,7 +71,22 @@ class TestTriggerJob(unittest.TestCase):
         """trigger_arbitrary_job should raise an BuildapiAuthError if it receives a bad response."""
         with self.assertRaises(buildapi_client.BuildapiAuthError):
             buildapi_client.trigger_arbitrary_job(
-                "repo", "builder", "123456123456", auth=None, dry_run=False)
+                repo_name="repo",
+                builder="builder",
+                revision=FORTY_CHAR_CHANGESET,
+                auth=None,
+                dry_run=False)
+
+    @patch('requests.post', return_value=mock_response(POST_RESPONSE, 401))
+    def test_twelve_char_request(self, post):
+        """trigger_arbitrary_job should raise an BuildapiAuthError if it receives a bad response."""
+        with self.assertRaises(AssertionError):
+            buildapi_client.trigger_arbitrary_job(
+                repo_name="repo",
+                builder="builder",
+                revision=TWELVE_CHAR_CHANGESET,
+                auth=None,
+                dry_run=False)
 
 
 class TestMakeRetriggerRequest(unittest.TestCase):

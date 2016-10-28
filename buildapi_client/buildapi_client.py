@@ -35,6 +35,8 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=None, dry_ru
 
     Raises BuildapiAuthError if credentials are invalid.
     """
+    assert len(revision) == 40, \
+        'We do not accept revisions shorter than 40 chars'
     url = _builders_api_url(repo_name, builder, revision)
     payload = _payload(repo_name, revision, files, extra_properties)
 
@@ -212,7 +214,7 @@ def query_jobs_schedule(repo_name, revision, auth):
     req = requests.get(url, auth=auth)
 
     # If the revision doesn't exist on buildapi, that means there are
-    # no builapi jobs for this revision
+    # no buildapi jobs for this revision
     if req.status_code not in [200]:
         return []
 
