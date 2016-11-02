@@ -104,7 +104,8 @@ def make_retrigger_request(repo_name, request_id, auth, count=DEFAULT_COUNT_NUM,
         url,
         headers={'Accept': 'application/json'},
         data=payload,
-        auth=auth
+        auth=auth,
+        timeout=TCP_TIMEOUT,
     )
     # TODO: add debug message with job_id URL.
     return req
@@ -124,7 +125,7 @@ def make_cancel_request(repo_name, request_id, auth, dry_run=True):
         return None
 
     LOG.info("We're going to cancel the job at %s" % url)
-    req = requests.delete(url, auth=auth)
+    req = requests.delete(url, auth=auth, timeout=TCP_TIMEOUT)
     # TODO: add debug message with the canceled job_id URL. Find a way
     # to do that without doing an additional request.
     return req
@@ -159,7 +160,8 @@ def make_retrigger_build_request(repo_name, build_id, auth, count=DEFAULT_COUNT_
         url,
         headers={'Accept': 'application/json'},
         data=payload,
-        auth=auth
+        auth=auth,
+        timeout=TCP_TIMEOUT,
     )
 
     return req
