@@ -16,8 +16,9 @@ import requests
 
 BUG_BOOKMARK = 'https://bugzilla.mozilla.org/enter_bug.cgi?assigned_to=nobody%40mozilla.org&bug_file_loc=http%3A%2F%2F&bug_ignored=0&bug_severity=major&bug_status=NEW&cc=armenzg%40mozilla.com&cf_blocking_fennec=---&cf_fx_iteration=---&cf_fx_points=---&cf_status_firefox49=---&cf_status_firefox50=---&cf_status_firefox51=---&cf_status_firefox52=---&cf_status_firefox_esr45=---&cf_tracking_firefox49=---&cf_tracking_firefox50=---&cf_tracking_firefox51=---&cf_tracking_firefox52=---&cf_tracking_firefox_esr45=---&cf_tracking_firefox_relnote=---&component=Buildduty&contenttypemethod=autodetect&contenttypeselection=text%2Fplain&defined_groups=1&flag_type-4=X&flag_type-481=X&flag_type-607=X&flag_type-674=X&flag_type-720=X&flag_type-721=X&flag_type-737=X&flag_type-800=X&flag_type-803=X&flag_type-905=X&form_name=enter_bug&maketemplate=Remember%20values%20as%20bookmarkable%20template&op_sys=Unspecified&priority=--&product=Release%20Engineering&qa_contact=bugspam.Callek%40gmail.com&rep_platform=Unspecified&short_desc=Buildapi%20is%20down&target_milestone=---&version=unspecified'  # flake8: noqa
 HOST_ROOT = 'https://secure.pub.build.mozilla.org/buildapi'
-SELF_SERVE = '{}/self-serve'.format(HOST_ROOT)
 LOG = logging.getLogger('buildapi')
+SELF_SERVE = '{}/self-serve'.format(HOST_ROOT)
+TCP_TIMEOUT=10
 
 DEFAULT_COUNT_NUM = 1
 DEFAULT_PRIORITY = 0
@@ -56,7 +57,8 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=None, dry_ru
         url,
         headers={'Accept': 'application/json'},
         data=payload,
-        auth=auth
+        auth=auth,
+        timeout=TCP_TIMEOUT,
     )
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
@@ -170,7 +172,7 @@ def make_query_repositories_request(auth, dry_run=True):
         LOG.info('We would make a GET request to %s.' % url)
         return None
 
-    req = requests.get(url, auth=auth)
+    req = requests.get(url, auth=auth, timeout=TCP_TIMEOUT)
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
     return req.json()
@@ -219,7 +221,7 @@ def query_jobs_schedule(repo_name, revision, auth):
     """
     url = "%s/%s/rev/%s?format=json" % (SELF_SERVE, repo_name, revision)
     LOG.debug("About to fetch %s" % url)
-    req = requests.get(url, auth=auth)
+    req = requests.get(url, auth=auth, timeout=TCP_TIMEOUT)
 
     # If the revision doesn't exist on buildapi, that means there are
     # no buildapi jobs for this revision
@@ -238,7 +240,7 @@ def query_pending_jobs(auth, repo_name=None, return_raw=False):
     """Return pending jobs"""
     url = '%s/pending?format=json' % HOST_ROOT
     LOG.debug('About to fetch %s' % url)
-    req = requests.get(url, auth=auth)
+    req = requests.get(url, auth=auth, timeout=TCP_TIMEOUT)
 
     # If the revision doesn't exist on buildapi, that means there are
     # no builapi jobs for this revision
