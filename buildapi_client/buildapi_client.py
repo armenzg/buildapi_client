@@ -14,6 +14,7 @@ import logging
 
 import requests
 
+BUG_BOOKMARK = 'https://bugzilla.mozilla.org/enter_bug.cgi?assigned_to=nobody%40mozilla.org&bug_file_loc=http%3A%2F%2F&bug_ignored=0&bug_severity=major&bug_status=NEW&cc=armenzg%40mozilla.com&cf_blocking_fennec=---&cf_fx_iteration=---&cf_fx_points=---&cf_status_firefox49=---&cf_status_firefox50=---&cf_status_firefox51=---&cf_status_firefox52=---&cf_status_firefox_esr45=---&cf_tracking_firefox49=---&cf_tracking_firefox50=---&cf_tracking_firefox51=---&cf_tracking_firefox52=---&cf_tracking_firefox_esr45=---&cf_tracking_firefox_relnote=---&component=Buildduty&contenttypemethod=autodetect&contenttypeselection=text%2Fplain&defined_groups=1&flag_type-4=X&flag_type-481=X&flag_type-607=X&flag_type-674=X&flag_type-720=X&flag_type-721=X&flag_type-737=X&flag_type-800=X&flag_type-803=X&flag_type-905=X&form_name=enter_bug&maketemplate=Remember%20values%20as%20bookmarkable%20template&op_sys=Unspecified&priority=--&product=Release%20Engineering&qa_contact=bugspam.Callek%40gmail.com&rep_platform=Unspecified&short_desc=Buildapi%20is%20down&target_milestone=---&version=unspecified'  # flake8: noqa
 HOST_ROOT = 'https://secure.pub.build.mozilla.org/buildapi'
 SELF_SERVE = '{}/self-serve'.format(HOST_ROOT)
 LOG = logging.getLogger('buildapi')
@@ -23,6 +24,10 @@ DEFAULT_PRIORITY = 0
 
 
 class BuildapiAuthError(Exception):
+    pass
+
+
+class BuildapiDown(Exception):
     pass
 
 
@@ -55,13 +60,16 @@ def trigger_arbitrary_job(repo_name, builder, revision, auth, files=None, dry_ru
     )
     if req.status_code == 401:
         raise BuildapiAuthError("Your credentials were invalid. Please try again.")
+    elif req.status_code == 503:
+        raise BuildapiDown("Please file a bug {}".format(url))
 
     try:
         req.json()
         return req
 
     except ValueError:
-        LOG.warning("We did not get info from %s (status code: %s)" % (url, req.status_code))
+        LOG.info('repo: {}, builder: {}, revision: {}'.format(repo_name, builder, revision))
+        LOG.error("We did not get info from %s (status code: %s)" % (url, req.status_code))
         return None
 
 
